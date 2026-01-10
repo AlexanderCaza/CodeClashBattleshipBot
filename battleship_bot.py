@@ -158,6 +158,107 @@ class MyBattleshipBot(BattleshipBotAPI):
                 }
             }
         
+        def get_adjacent_cells(row, column):
+            adjacent_cells = []
+            if (row >= 1):
+                adjacent_cells.append([row - 1, column])
+            if (row <= 6):
+                adjacent_cells.append([row + 1, column])
+            if (column >= 1):
+                adjacent_cells.append([row, column - 1])
+            if (column <= 6):
+                adjacent_cells.append([row, column + 1])
+       
+        def get_opportunistic_targets(opponent_grid):
+            hits_to_process = []
+            cells_processed = []
+            opportunity_targets = []
+            sunk_ships = []
+            hits_in_group = []
+            for i in range(0, 7):
+                row = opponent_grid[i]
+                for j in range(0, 7):
+                    number_of_hits_in_group = 0
+                    cell = row[j]
+                    if (cell == "H" or cell == "S"):
+                        if ([i, j] in cells_processed): 
+                            continue
+                        cells_to_check = get_adjacent_cells(i, j)
+                        number_of_hits_in_group += 1
+                        for cell_being_processed in cells_to_check:
+                            cell_row = cell_being_processed[0]
+                            cell_column = cell_being_processed[1]
+                            cell_content = opponent_grid[cell_row][cell_column]
+                            if (cell_content == "H"):
+                                if (cell_being_processed in cells_processed):
+                                    continue
+                                number_of_hits_in_group += 1
+                                cells_processed.append(cell_being_processed)
+                                hits_in_group.append(cell_being_processed)
+                                for adj_cell in get_adjacent_cells(cell_row, cell_column):
+                                    cells_to_check.append(adj_cell)    
+                            elif (cell_content == "M"):
+                                continue
+                            elif (cell_content == "N" or cell == "S"):
+                                if (cell_being_processed in cells_processed):
+                                    continue
+                                opportunity_targets.append(cell_being_processed)
+                                cells_processed.append(cell_being_processed)
+                    if not opportunity_targets: # Group is a sunk ship or ships
+                        if (number_of_hits_in_group == 2):
+                            sunk_ships.append("ship_1x2")
+                        elif (number_of_hits_in_group == 3):
+                            sunk_ships.append("ship_1x3")
+                        elif (number_of_hits_in_group == 4): 
+                            sunk_ships.append("ship_1x4")
+                        elif (number_of_hits_in_group == 6): 
+                            min_row = 9
+                            max_row = -1
+                            min_column = 9
+                            max_column = -1
+                            for hit in hits_in_group:
+                                row = hit[0]
+                                column = hit[1]
+                                if (min_row > row):
+                                    min_row = row
+                                if (max_row < row):
+                                    max_row = row
+                                if (min_column > column):
+                                    min_column = column
+                                if (max_column < column):
+                                    max_column = column
+                                if (max_row - min_row > 3 or max_column - min_column > 3):
+                                    sunk_ships.append("ship_1x2")
+                                    sunk_ships.append("ship_1x4")
+                                else:
+                                    sunk_ships.append("ship_2x3")
+                        elif (number_of_hits_in_group == 7): 
+                            sunk_ships.append("ship_1x3")
+                            sunk_ships.append("ship_1x4")
+                        elif (number_of_hits_in_group == 9): 
+                            sunk_ships.append("ship_1x3") # Doesn't matter if it's 2 + 4 + 3 or 6 + 3 sunk
+                        elif (number_of_hits_in_group == 10): 
+                            sunk_ships.append("ship_1x4")
+                            sunk_ships.append("ship_2x3")
+                        elif (number_of_hits_in_group == 11): 
+                            sunk_ships.append("ship_1x2")
+                            sunk_ships.append("ship_1x3")
+                            sunk_ships.append("ship_2x3")
+                        elif (number_of_hits_in_group == 12): 
+                            sunk_ships.append("ship_1x2")
+                            sunk_ships.append("ship_1x4")
+                            sunk_ships.append("ship_2x3")
+                        elif (number_of_hits_in_group == 13): 
+                            sunk_ships.append("ship_1x3")
+                            sunk_ships.append("ship_1x4")
+                            sunk_ships.append("ship_2x3")
+                    hits_to_process.clear()
+            return opportunity_targets, sunk_ships
+        
+
+                 
+        sonar_result = get_sonar_result(<info>)
+        attack_shields_result = attack_shields(sonar_result, opponent_grid)
         #second turn: parse sonar and fire at any hits
         if is_blank and not ("SP" in available_abilities):
             #get sonar data
