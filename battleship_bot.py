@@ -145,18 +145,7 @@ class MyBattleshipBot(BattleshipBotAPI):
                         else:
                             return False
                         
-            return False
-        
-        #first move: use SP
-        if is_blank and "SP" in available_abilities:
-        #if blank grid, i.e. first move
-            #do SP in the middleish of the board
-            return {
-                "combat": {
-                    "cell": [0, 0],
-                    "ability": {"SP": [3, 3]}
-                }
-            }
+            return False        
         
         def get_adjacent_cells(row, column):
             adjacent_cells = []
@@ -255,10 +244,17 @@ class MyBattleshipBot(BattleshipBotAPI):
                     hits_to_process.clear()
             return opportunity_targets, sunk_ships
         
+        #first move: use SP
+        if is_blank and "SP" in available_abilities:
+        #if blank grid, i.e. first move
+            #do SP in the middleish of the board
+            return {
+                "combat": {
+                    "cell": [0, 0],
+                    "ability": {"SP": [3, 3]}
+                }
+            }
 
-                 
-        sonar_result = get_sonar_result(<info>)
-        attack_shields_result = attack_shields(sonar_result, opponent_grid)
         #second turn: parse sonar and fire at any hits
         if is_blank and not ("SP" in available_abilities):
             #get sonar data
