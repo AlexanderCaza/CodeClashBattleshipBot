@@ -171,7 +171,7 @@ class MyBattleshipBot(BattleshipBotAPI):
                 for j in range(0, 7):
                     number_of_hits_in_group = 0
                     cell = row[j]
-                    if (cell == "H" or "S"):
+                    if (cell == "H" or cell == "S"):
                         if ([i, j] in hits_processed): 
                             continue
                         cells_to_check = get_adjacent_cells(i, j)
@@ -190,7 +190,7 @@ class MyBattleshipBot(BattleshipBotAPI):
                                     cells_to_check.append(adj_cell)    
                             elif (cell_content == "M"):
                                 continue
-                            elif (cell_content == "N" or "S"):
+                            elif (cell_content == "N" or cell == "S"):
                                 if (cell_being_processed in cells_processed):
                                     continue
                                 opportunity_targets.append(cell_being_processed)
@@ -248,7 +248,7 @@ class MyBattleshipBot(BattleshipBotAPI):
         
 
                  
-        # sonar_result = get_sonar_result(<info>)
+        sonar_result = get_sonar_result(<info>)
         attack_shields_result = attack_shields(sonar_result, opponent_grid)
         if (attack_shields_result):
             return attack_shields_result
