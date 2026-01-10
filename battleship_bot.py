@@ -124,39 +124,44 @@ class MyBattleshipBot(BattleshipBotAPI):
         
         def get_max_PDF_coords(PDF_grid):
             #TODO: there may be a bug here
-            # max_coords = [0, 0]
-            # max_val = 0
-            # for row in range(8):
-            #     for square in range(8):
-            #         if PDF_grid[row][square] >= max_val:
-            #             max_val = PDF_grid[row][square]
-            #             max_coords = [row, square]
-            #return max_coords
-            return [0, 0]
+            max_coords = [0, 0]
+            max_val = 0
+            for row in range(8):
+                for square in range(8):
+                    if PDF_grid[row][square] >= max_val:
+                        max_val = PDF_grid[row][square]
+                        max_coords = [row, square]
+            return max_coords
+        
+        def unsunk_from_sunk(sunk_ships):
+            unsunk_ships = [(4, 1), (1, 4), (2, 3), (3, 2), (1, 3), (3, 1), (1, 2), (2, 1)]
+            for ship in sunk_ships:
+                if ship == "ship_1x2":
+                    unsunk_ships.remove((1, 2))
+                    unsunk_ships.remove((2, 1))
+                elif ship == "ship_1x3":
+                    unsunk_ships.remove((1, 3))
+                    unsunk_ships.remove((3, 1))
+                elif ship == "ship_1x4":
+                    unsunk_ships.remove((1, 4))
+                    unsunk_ships.remove((4, 1))
+                elif ship == "ship_2x3":
+                    unsunk_ships.remove((2, 3))
+                    unsunk_ships.remove((3, 2))
+            return unsunk_ships
         
         def attack_shields(opponent_grid):
             #Returns combat JSON of shield if it exists and we should attack it
             #Returns False otherwise
             for row in range(8):
                 for col in range(8):
-                    if opponent_grid[row][col] == "S":
+                    if opponent_grid[row][col] == "B":
                         if random.randint(0, 2) == 2:
                             return shoot_cell_JSON(row, col)
                         else:
                             return False
                         
-            return False
-        
-        #first move: use SP
-        if is_blank and "SP" in available_abilities:
-        #if blank grid, i.e. first move
-            #do SP in the middleish of the board
-            return {
-                "combat": {
-                    "cell": [0, 0],
-                    "ability": {"SP": [3, 3]}
-                }
-            }
+            return False        
         
         def get_adjacent_cells(row, column):
             adjacent_cells = []
@@ -180,10 +185,10 @@ class MyBattleshipBot(BattleshipBotAPI):
                 for j in range(0, 7):
                     number_of_hits_in_group = 0
                     cell = row[j]
-                    if (cell == "H" or cell == "S"):
+                    if (cell == "H" or cell == "B"):
                         if ([i, j] in cells_processed): 
                             continue
-                        cells_to_check = get_adjacent_cells(i, j)
+                        cells_to_check = [[0, 0]] #get_adjacent_cells(i, j)
                         number_of_hits_in_group += 1
                         for cell_being_processed in cells_to_check:
                             cell_row = cell_being_processed[0]
@@ -199,7 +204,7 @@ class MyBattleshipBot(BattleshipBotAPI):
                                     cells_to_check.append(adj_cell)    
                             elif (cell_content == "M"):
                                 continue
-                            elif (cell_content == "N" or cell == "S"):
+                            elif (cell_content == "N" or cell == "B"):
                                 if (cell_being_processed in cells_processed):
                                     continue
                                 opportunity_targets.append(cell_being_processed)
@@ -255,11 +260,24 @@ class MyBattleshipBot(BattleshipBotAPI):
                     hits_to_process.clear()
             return opportunity_targets, sunk_ships
         
+        def select_next_target(opportunity_grid, target_list):
+            #TODO: dummy function, fill with actual computation
+            return shoot_cell_JSON(0, 0)
+        
+        #first move: use SP
+        #INTEGRATED
+        if is_blank and "SP" in available_abilities:
+        #if blank grid, i.e. first move
+            #do SP in the middleish of the board
+            return {
+                "combat": {
+                    "cell": [0, 0],
+                    "ability": {"SP": [3, 3]}
+                }
+            }
 
-                 
-        sonar_result = get_sonar_result(<info>)
-        attack_shields_result = attack_shields(sonar_result, opponent_grid)
         #second turn: parse sonar and fire at any hits
+        #INTEGRATED
         if is_blank and not ("SP" in available_abilities):
             #get sonar data
             SP_json = game_state.get("player_abilities")[0]
@@ -282,19 +300,23 @@ class MyBattleshipBot(BattleshipBotAPI):
             }
         
         #subsequent turns
+        #1. look for shields
+        #Integrated
         attack_shields_result = attack_shields(opponent_grid)
         if (attack_shields_result):
             return attack_shields_result
-        # target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
-        # if (target_list):
-        #     return select_next_target(opponent_grid, target_list)
-
         
-        PDF_grid = generate_PDF(opponent_grid, [(4, 1), (1, 4), (2, 3), (3, 2)]) #TODO: un-hardcode
+        #TODO: fill out select_next_target
+        target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
+        if (target_list):
+            return select_next_target(opponent_grid, target_list)
+
+        #4. if no target lists
+        PDF_grid = generate_PDF(opponent_grid, unsunk_from_sunk(sunk_ships))
         target_coords = get_max_PDF_coords(PDF_grid)
         return {
             "combat": {
-                "cell": [0, 0], #change to target_coords
+                "cell": target_coords,
                 "ability": {"None": {}}
             }
         }
