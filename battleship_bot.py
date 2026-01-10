@@ -260,9 +260,24 @@ class MyBattleshipBot(BattleshipBotAPI):
                     hits_to_process.clear()
             return opportunity_targets, sunk_ships
         
-        def select_next_target(opportunity_grid, target_list):
-            #TODO: dummy function, fill with actual computation
-            return shoot_cell_JSON(0, 0)
+        def attack_next_target(target_list, opponent_grid):
+            for target in target_list:
+                row = target_list[0]
+                column = target_list[1]
+                if ((row - 1 >= 0 and row + 1 <= 7 and opponent_grid[row - 1][column] == "H" and opponent_grid[row + 1][column] == "H") 
+                    or (column - 1 >= 0 and column + 1 <= 7 and opponent_grid[row][column - 1] == "H" and opponent_grid[row][column - 1] == "H")
+                    ):
+                    return shoot_cell_JSON(row, column)
+                if ((row - 2 >= 0 and opponent_grid[row - 1][column] == "H" and opponent_grid[row - 2][column] == "H") 
+                    or (row + 2 <= 7 and opponent_grid[row + 1][column] == "H" and opponent_grid[row + 2][column] == "H")
+                    or (column - 2 >= 0 and opponent_grid[row][column - 1] == "H" and opponent_grid[row][column - 2] == "H") 
+                    or (column + 2 <= 7 and opponent_grid[row][column + 1] == "H" and opponent_grid[row][column + 2] == "H")
+                    ):
+                    return shoot_cell_JSON(row, column)
+
+            # Catch all: Attack the first target
+            return shoot_cell_JSON(target_list[0][0], target_list[0][1])
+
         
         #first move: use SP
         #INTEGRATED
@@ -309,7 +324,7 @@ class MyBattleshipBot(BattleshipBotAPI):
         #TODO: fill out select_next_target
         target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
         if (target_list):
-            return select_next_target(opponent_grid, target_list)
+            return attack_next_target(target_list, opponent_grid)
 
         #4. if no target lists
         PDF_grid = generate_PDF(opponent_grid, unsunk_from_sunk(sunk_ships))
