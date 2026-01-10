@@ -94,23 +94,23 @@ class MyBattleshipBot(BattleshipBotAPI):
         
         def does_ship_fit(ship_dimensions, opponent_grid, start_coords) -> bool:
             #TODO: change to row and square
-            start_x = start_coords[0]
-            start_y = start_coords[1]
+            start_row = start_coords[0]
+            start_square = start_coords[1]
 
             ship_hori = ship_dimensions[0]
             ship_verti = ship_dimensions[1]
             
-            #if we've run out of horizontal grid space
-            if start_x + ship_hori[0] > 8:
+            #if we've run out of rows
+            if start_row + ship_verti[0] > 8:
                 return False
-            #run out of vertical grid space
-            if start_y[1] + ship_verti[1] > 8:
+            #run out of columns
+            if start_square[1] + ship_hori[1] > 8:
                 return False
             
             #check horizontal space
-            for i in range(ship_dimensions[0]):
-                for j in range(ship_dimensions[1]):
-                    if opponent_grid[start_y + j][start_x + i] != "N":
+            for i in range(ship_hori):
+                for j in range(ship_verti):
+                    if opponent_grid[start_row + j][start_square + i] != "N":
                         return False
             return True
         
