@@ -48,6 +48,7 @@ class MyBattleshipBot(BattleshipBotAPI):
         }
         
     def combat_strategy(self, game_state: dict) -> dict:
+        print("starting combat")
         """Choose a combat move."""
         # TODO: Replace with your strategy
         available_abilities = self._get_available_abilities(game_state)
@@ -62,12 +63,6 @@ class MyBattleshipBot(BattleshipBotAPI):
                     "ability": {"None": {}}
                 }
             }
-        
-        def get_unsunk_ships(board): 
-            for i in range(1, 8):
-                row = board[i]
-                for j in range(1, 8):
-                    cell = row[j]  
 
         def is_blank(opponent_grid):
         #Returns True if the grid is blank, False otherwise.
@@ -112,6 +107,8 @@ class MyBattleshipBot(BattleshipBotAPI):
                     "ability": {"HS": [0, 0]}
                 }
             }
+        
+        print("finished early game")
         
         def does_ship_fit(ship_dimensions, opponent_grid, start_coords) -> bool:
             #TODO: change to row and square
@@ -161,7 +158,8 @@ class MyBattleshipBot(BattleshipBotAPI):
             return PDF_grid
         
         def get_max_PDF_coords(PDF_grid):
-            max_coords = []
+            #TODO: there may be a bug here
+            max_coords = [0, 0]
             max_val = 0
             for row in range(8):
                 for square in range(8):
@@ -169,11 +167,9 @@ class MyBattleshipBot(BattleshipBotAPI):
                         max_val = PDF_grid[row][square]
                         max_coords = [row, square]
             return max_coords
-
-        def parse_sonar
         
         def attack_shields(opponent_grid):
-            #Returns coordinates of shield if it exists and we should attack it
+            #Returns combat JSON of shield if it exists and we should attack it
             #Returns False otherwise
             for row in range(8):
                 for col in range(8):
@@ -185,16 +181,15 @@ class MyBattleshipBot(BattleshipBotAPI):
                         
             return False
         
-        sonar_result = get_sonar_result(<info>)
         attack_shields_result = attack_shields(opponent_grid)
         if (attack_shields_result):
             return attack_shields_result
-        target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
-        if (target_list):
-            return select_next_target(opponent_grid, target_list)
+        # target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
+        # if (target_list):
+        #     return select_next_target(opponent_grid, target_list)
 
         
-        PDF_grid = generate_PDF(opponent_grid, ship_list)
+        PDF_grid = generate_PDF(opponent_grid, [(4, 1), (1, 4), (2, 3), (3, 2)]) #TODO: un-hardcode
         target_coords = get_max_PDF_coords(PDF_grid)
         return {
             "combat": {
