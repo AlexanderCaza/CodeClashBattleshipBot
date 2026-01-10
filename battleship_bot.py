@@ -54,6 +54,14 @@ class MyBattleshipBot(BattleshipBotAPI):
         opponent_grid = self._get_opponent_grid(game_state)
         available_cells = self._get_available_cells(opponent_grid)
 
+        def shoot_cell_JSON(cell_x, cell_y):
+            return {
+                "combat": {
+                    "cell": [cell_x, cell_y],
+                    "ability": {"None": {}}
+                }
+            }
+
         def count_N(opponent_grid):
         #Returns the number of untargeted squares in the grid.
             total = 0
