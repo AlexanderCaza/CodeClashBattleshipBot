@@ -244,6 +244,9 @@ class MyBattleshipBot(BattleshipBotAPI):
                     hits_to_process.clear()
             return opportunity_targets, sunk_ships
         
+        def select_next_target():
+            return shoot_cell_JSON(0, 0)
+        
         #first move: use SP
         if is_blank and "SP" in available_abilities:
         #if blank grid, i.e. first move
