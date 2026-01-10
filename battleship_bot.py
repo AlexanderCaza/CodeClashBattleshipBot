@@ -39,7 +39,6 @@ class MyBattleshipBot(BattleshipBotAPI):
             "ship_1x4": "H", 
             "ship_2x3": "H"
         }
-        placed_coords = self._get_placed_coordinates(game_state)
         return {
             "placement": {
                 "name": ship_name, 
