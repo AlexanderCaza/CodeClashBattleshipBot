@@ -124,15 +124,31 @@ class MyBattleshipBot(BattleshipBotAPI):
         
         def get_max_PDF_coords(PDF_grid):
             #TODO: there may be a bug here
-            # max_coords = [0, 0]
-            # max_val = 0
-            # for row in range(8):
-            #     for square in range(8):
-            #         if PDF_grid[row][square] >= max_val:
-            #             max_val = PDF_grid[row][square]
-            #             max_coords = [row, square]
-            #return max_coords
-            return [0, 0]
+            max_coords = [0, 0]
+            max_val = 0
+            for row in range(8):
+                for square in range(8):
+                    if PDF_grid[row][square] >= max_val:
+                        max_val = PDF_grid[row][square]
+                        max_coords = [row, square]
+            return max_coords
+        
+        def unsunk_from_sunk(sunk_ships):
+            unsunk_ships = [(4, 1), (1, 4), (2, 3), (3, 2), (1, 3), (3, 1), (1, 2), (2, 1)]
+            for ship in sunk_ships:
+                if ship == "ship_1x2":
+                    unsunk_ships.remove((1, 2))
+                    unsunk_ships.remove((2, 1))
+                elif ship == "ship_1x3":
+                    unsunk_ships.remove((1, 3))
+                    unsunk_ships.remove((3, 1))
+                elif ship == "ship_1x4":
+                    unsunk_ships.remove((1, 4))
+                    unsunk_ships.remove((4, 1))
+                elif ship == "ship_2x3":
+                    unsunk_ships.remove((2, 3))
+                    unsunk_ships.remove((3, 2))
+            return unsunk_ships
         
         def attack_shields(opponent_grid):
             #Returns combat JSON of shield if it exists and we should attack it
@@ -284,15 +300,19 @@ class MyBattleshipBot(BattleshipBotAPI):
             }
         
         #subsequent turns
+        #1. look for shields
+        #Integrated
         attack_shields_result = attack_shields(opponent_grid)
         if (attack_shields_result):
             return attack_shields_result
+        
+        #TODO: fill out select_next_target
         target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
         if (target_list):
             return select_next_target(opponent_grid, target_list)
 
-        
-        PDF_grid = generate_PDF(opponent_grid, [(4, 1), (1, 4), (2, 3), (3, 2)]) #TODO: un-hardcode
+        #4. if no target lists
+        PDF_grid = generate_PDF(opponent_grid, unsunk_from_sunk(sunk_ships))
         target_coords = get_max_PDF_coords(PDF_grid)
         return {
             "combat": {
