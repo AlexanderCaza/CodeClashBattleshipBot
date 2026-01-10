@@ -77,8 +77,22 @@ class MyBattleshipBot(BattleshipBotAPI):
                     "ability": {"HS": [0, 0]}
                 }
             }
+        
+        def does_ship_fit(ship_dimensions, opponent_grid, start_coord) -> bool:
+            
+            return True
+        
+        def add_ship_to_PDF(ship, PDF_grid, opponent_grid):
+            #horizontal placement
+            for i in range(8):
+                row = PDF_grid[i]
+                for j in range(8):
+                    square = row[j]
+            #vertical placement
+            return
 
         def generate_PDF(opponent_grid, ship_list):
+            #Returns the PDF grid
             PDF_grid = [[0, 0, 0, 0, 0, 0, 0, 0],
                         [0, 0, 0, 0, 0, 0, 0, 0],
                         [0, 0, 0, 0, 0, 0, 0, 0],
