@@ -27,20 +27,26 @@ class MyBattleshipBot(BattleshipBotAPI):
     def place_ship_strategy(self, ship_name: str, game_state: dict) -> dict:
         """Place a ship on your board."""
         # TODO: Replace with your strategy
-        placed_coords = self._get_placed_coordinates(game_state)
-        placement = self._get_random_placement(ship_name, placed_coords)
-
-        if placement:
-            return placement
-        
-        # Fallback
+        ship_positions = thisdict = {
+            "ship_1x2": [8, 7],
+            "ship_1x3": [4, 7], 
+            "ship_1x4": [5, 2], 
+            "ship_2x3": [4, 5]
+        }
+        ship_directions = {
+            "ship_1x2": "V",
+            "ship_1x3": "H", 
+            "ship_1x4": "H", 
+            "ship_2x3": "H"
+        }
         return {
             "placement": {
-                "cell": [0, 0],
-                "direction": 'H'
+                "name": ship_name, 
+                "cell": ship_positions[ship_name], 
+                "direction": ship_directions[ship_name]
             }
         }
-    
+        
     def combat_strategy(self, game_state: dict) -> dict:
         """Choose a combat move."""
         # TODO: Replace with your strategy
