@@ -172,7 +172,7 @@ class MyBattleshipBot(BattleshipBotAPI):
                     number_of_hits_in_group = 0
                     cell = row[j]
                     if (cell == "H" or cell == "S"):
-                        if ([i, j] in hits_processed): 
+                        if ([i, j] in cells_processed): 
                             continue
                         cells_to_check = get_adjacent_cells(i, j)
                         number_of_hits_in_group += 1
