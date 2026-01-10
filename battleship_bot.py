@@ -142,7 +142,7 @@ class MyBattleshipBot(BattleshipBotAPI):
             return max_coords
         
         is_unresolved_hit = True #TODO: implement logic for if there is an unresolved hit
-        ship_list = [] #TODO: fill out using helper fns
+        ship_list = [] #ships that we haven't hit yet
 
         if not is_unresolved_hit: #if we should generate the PDF
             PDF_grid = generate_PDF(opponent_grid, ship_list)
