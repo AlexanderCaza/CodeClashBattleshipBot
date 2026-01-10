@@ -84,18 +84,33 @@ class MyBattleshipBot(BattleshipBotAPI):
                 }
             }
         
-        def does_ship_fit(ship_dimensions, opponent_grid, start_coord) -> bool:
+        def does_ship_fit(ship_dimensions, opponent_grid, start_coords) -> bool:
+            start_x = start_coords[0]
+            start_y = start_coords[1]
+
+            ship_hori = ship_dimensions[0]
+            ship_verti = ship_dimensions[1]
+            #if we've run out of horizontal grid space
+            if start_x + ship_hori[0] > 8:
+                return False
+            #run out of vertical grid space
+            if start_y[1] + ship_verti[1] > 8:
+                return False
             
+            #check horizontal space
+            for i in range(ship_dimensions[0]):
+                for j in range(ship_dimensions[1]):
+                    if opponent_grid[start_y + j][start_x + i] != "N":
+                        return False
             return True
         
-        def add_ship_to_PDF(ship, PDF_grid, opponent_grid):
-            #horizontal placement
-            for i in range(8):
-                row = PDF_grid[i]
-                for j in range(8):
-                    square = row[j]
-            #vertical placement
-            return
+        def add_ship_to_PDF(ship_dimensions, PDF_grid, opponent_grid):
+            for x in range(8):
+                for y in range(8):
+                    if does_ship_fit(ship_dimensions, opponent_grid, (x, y)):
+                        for i in range(x):
+                            for j in range(y):
+                                PDF_grid[y][x] = PDF_grid[y][x] + 1
 
         def generate_PDF(opponent_grid, ship_list):
             #Returns the PDF grid
@@ -108,6 +123,7 @@ class MyBattleshipBot(BattleshipBotAPI):
                         [0, 0, 0, 0, 0, 0, 0, 0],
                         [0, 0, 0, 0, 0, 0, 0, 0],
                         ]
+
             return PDF_grid
         
         if available_cells:
