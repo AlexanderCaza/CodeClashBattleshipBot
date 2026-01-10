@@ -28,10 +28,10 @@ class MyBattleshipBot(BattleshipBotAPI):
         """Place a ship on your board."""
         # TODO: Replace with your strategy
         ship_positions = thisdict = {
-            "ship_1x2": [8, 7],
-            "ship_1x3": [4, 7], 
-            "ship_1x4": [5, 2], 
-            "ship_2x3": [4, 5]
+            "ship_1x2": [7, 6],
+            "ship_1x3": [3, 6], 
+            "ship_1x4": [4, 1], 
+            "ship_2x3": [3, 4]
         }
         ship_directions = {
             "ship_1x2": "V",
@@ -54,63 +54,45 @@ class MyBattleshipBot(BattleshipBotAPI):
         opponent_grid = self._get_opponent_grid(game_state)
         available_cells = self._get_available_cells(opponent_grid)
 
-        def shoot_cell_JSON(cell_x, cell_y):
+        def shoot_cell_JSON(row, col):
+            #TODO: double-check API coordinate logic
             return {
                 "combat": {
-                    "cell": [cell_x, cell_y],
+                    "cell": [row, col],
                     "ability": {"None": {}}
                 }
             }
 
-        def count_N(opponent_grid):
-        #Returns the number of untargeted squares in the grid.
+        def is_blank(opponent_grid):
+        #Returns True if the grid is blank, False otherwise.
             total = 0
             for row in opponent_grid:
                 for square in row:
-                    if square == "N":
-                        total += 1
-            return total
-
-        #first move: use SP
-        if count_N(opponent_grid) == 64:
-        #if blank grid, i.e. first move
-            #do SP in the middleish of the board
-            return {
-                "combat": {
-                    "cell": [0, 0],
-                    "ability": {"SP": [3, 3]}
-                }
-            }
+                    if square != "N":
+                        return False
+            return True
         
-        #second move: use HS
-        if count_N(opponent_grid) == 64 - 9:
-            #if it's the second move, at which point we've fired at 9 cells
-            return {
-                "combat": {
-                    "cell": [0, 0],
-                    "ability": {"HS": [0, 0]}
-                }
-            }
+        is_blank = is_blank(opponent_grid)
         
         def does_ship_fit(ship_dimensions, opponent_grid, start_coords) -> bool:
             #TODO: change to row and square
-            start_x = start_coords[0]
-            start_y = start_coords[1]
+            start_row = start_coords[0]
+            start_square = start_coords[1]
 
             ship_hori = ship_dimensions[0]
             ship_verti = ship_dimensions[1]
             
-            #if we've run out of horizontal grid space
-            if start_x + ship_hori[0] > 8:
+            #if we've run out of rows
+            if start_row + ship_verti > 8:
                 return False
-            #run out of vertical grid space
-            if start_y[1] + ship_verti[1] > 8:
+            #run out of columns
+            if start_square + ship_hori > 8:
                 return False
             
             #check horizontal space
-            for i in range(ship_dimensions[0]):
-                for j in range(ship_dimensions[1]):
-                    if opponent_grid[start_y + j][start_x + i] != "N":
+            for i in range(ship_hori):
+                for j in range(ship_verti):
+                    if opponent_grid[start_row + j][start_square + i] != "N":
                         return False
             return True
         
@@ -122,6 +104,7 @@ class MyBattleshipBot(BattleshipBotAPI):
                         for i in range(x):
                             for j in range(y):
                                 PDF_grid[y][x] = PDF_grid[y][x] + 1
+            return
 
         def generate_PDF(opponent_grid, ship_list):
             #Returns the PDF grid
@@ -140,14 +123,40 @@ class MyBattleshipBot(BattleshipBotAPI):
             return PDF_grid
         
         def get_max_PDF_coords(PDF_grid):
-            max_coords = []
-            max_val = 0
+            #TODO: there may be a bug here
+            # max_coords = [0, 0]
+            # max_val = 0
+            # for row in range(8):
+            #     for square in range(8):
+            #         if PDF_grid[row][square] >= max_val:
+            #             max_val = PDF_grid[row][square]
+            #             max_coords = [row, square]
+            #return max_coords
+            return [0, 0]
+        
+        def attack_shields(opponent_grid):
+            #Returns combat JSON of shield if it exists and we should attack it
+            #Returns False otherwise
             for row in range(8):
-                for square in range(8):
-                    if PDF_grid[row][square] >= max_val:
-                        max_val = PDF_grid[row][square]
-                        max_coords = [row, square]
-            return max_coords
+                for col in range(8):
+                    if opponent_grid[row][col] == "S":
+                        if random.randint(0, 2) == 2:
+                            return shoot_cell_JSON(row, col)
+                        else:
+                            return False
+                        
+            return False
+        
+        #first move: use SP
+        if is_blank and "SP" in available_abilities:
+        #if blank grid, i.e. first move
+            #do SP in the middleish of the board
+            return {
+                "combat": {
+                    "cell": [0, 0],
+                    "ability": {"SP": [3, 3]}
+                }
+            }
         
         def get_adjacent_cells(row, column):
             adjacent_cells = []
@@ -250,23 +259,46 @@ class MyBattleshipBot(BattleshipBotAPI):
                  
         sonar_result = get_sonar_result(<info>)
         attack_shields_result = attack_shields(sonar_result, opponent_grid)
+        #second turn: parse sonar and fire at any hits
+        if is_blank and not ("SP" in available_abilities):
+            #get sonar data
+            SP_json = game_state.get("player_abilities")[0]
+            info = SP_json.get("info").get("SP") #3-by-3 array
+            for row in info:
+                for json_col in row:
+                    #if sonar detects a ship, shoot it
+                    if row.get("result") == "Ship":
+                        return shoot_cell_JSON(row.get("cell")[0], row.get("cell")[0])
+                    else:
+                        opponent_grid[row.get("cell")[0]][row.get("cell")[1]] = "M"
+       
+        #Use HS if we haven't already (i.e. if sonar didn't turn up ships)
+        if "HS" in available_abilities:
+            return {
+                "combat": {
+                    "cell": [0, 0],
+                    "ability": {"HS": [0, 0]}
+                }
+            }
+        
+        #subsequent turns
+        attack_shields_result = attack_shields(opponent_grid)
         if (attack_shields_result):
             return attack_shields_result
-        target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
-        if (target_list):
-            return select_next_target(opponent_grid, target_list)
+        # target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
+        # if (target_list):
+        #     return select_next_target(opponent_grid, target_list)
 
         
-        PDF_grid = generate_PDF(opponent_grid, ship_list)
+        PDF_grid = generate_PDF(opponent_grid, [(4, 1), (1, 4), (2, 3), (3, 2)]) #TODO: un-hardcode
         target_coords = get_max_PDF_coords(PDF_grid)
         return {
             "combat": {
-                "cell": target_coords,
+                "cell": [0, 0], #change to target_coords
                 "ability": {"None": {}}
             }
         }
-    
-        
+            
         if available_cells:
             target = random.choice(available_cells)
         else:
