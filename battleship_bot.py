@@ -85,6 +85,7 @@ class MyBattleshipBot(BattleshipBotAPI):
             }
         
         def does_ship_fit(ship_dimensions, opponent_grid, start_coords) -> bool:
+            #TODO: change to row and square
             start_x = start_coords[0]
             start_y = start_coords[1]
 
@@ -106,6 +107,7 @@ class MyBattleshipBot(BattleshipBotAPI):
             return True
         
         def add_ship_to_PDF(ship_dimensions, PDF_grid, opponent_grid):
+            #TODO: change to row and square
             for x in range(8):
                 for y in range(8):
                     if does_ship_fit(ship_dimensions, opponent_grid, (x, y)):
@@ -128,6 +130,29 @@ class MyBattleshipBot(BattleshipBotAPI):
                 #TODO: transform ship name into dimensions
                 add_ship_to_PDF(ship, PDF_grid, opponent_grid) 
             return PDF_grid
+        
+        def get_max_PDF_coords(PDF_grid):
+            max_coords = []
+            max_val = 0
+            for row in range(8):
+                for square in range(8):
+                    if PDF_grid[row][square] >= max_val:
+                        max_val = PDF_grid[row][square]
+                        max_coords = [row, square]
+            return max_coords
+        
+        is_unresolved_hit = True #TODO: implement logic for if there is an unresolved hit
+        ship_list = [] #TODO: fill out using helper fns
+
+        if not is_unresolved_hit: #if we should generate the PDF
+            PDF_grid = generate_PDF(opponent_grid, ship_list)
+            target_coords = get_max_PDF_coords(PDF_grid)
+            return {
+            "combat": {
+                "cell": target_coords,
+                "ability": {"None": {}}
+            }
+        }
         
         if available_cells:
             target = random.choice(available_cells)
