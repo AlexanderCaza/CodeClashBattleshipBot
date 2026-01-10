@@ -48,7 +48,6 @@ class MyBattleshipBot(BattleshipBotAPI):
         }
         
     def combat_strategy(self, game_state: dict) -> dict:
-        print("starting combat")
         """Choose a combat move."""
         # TODO: Replace with your strategy
         available_abilities = self._get_available_abilities(game_state)
