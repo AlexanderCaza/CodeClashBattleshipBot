@@ -172,7 +172,7 @@ class MyBattleshipBot(BattleshipBotAPI):
                     if (cell == "H" or cell == "B"):
                         if ([i, j] in cells_processed): 
                             continue
-                        cells_to_check = get_adjacent_cells(i, j)
+                        cells_to_check = [[0, 0]] #get_adjacent_cells(i, j)
                         number_of_hits_in_group += 1
                         for cell_being_processed in cells_to_check:
                             cell_row = cell_being_processed[0]
@@ -244,10 +244,12 @@ class MyBattleshipBot(BattleshipBotAPI):
                     hits_to_process.clear()
             return opportunity_targets, sunk_ships
         
-        def select_next_target():
+        def select_next_target(opportunity_grid, target_list):
+            #TODO: dummy function, fill with actual computation
             return shoot_cell_JSON(0, 0)
         
         #first move: use SP
+        #INTEGRATED
         if is_blank and "SP" in available_abilities:
         #if blank grid, i.e. first move
             #do SP in the middleish of the board
@@ -259,6 +261,7 @@ class MyBattleshipBot(BattleshipBotAPI):
             }
 
         #second turn: parse sonar and fire at any hits
+        #INTEGRATED
         if is_blank and not ("SP" in available_abilities):
             #get sonar data
             SP_json = game_state.get("player_abilities")[0]
