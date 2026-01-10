@@ -90,6 +90,7 @@ class MyBattleshipBot(BattleshipBotAPI):
 
             ship_hori = ship_dimensions[0]
             ship_verti = ship_dimensions[1]
+            
             #if we've run out of horizontal grid space
             if start_x + ship_hori[0] > 8:
                 return False
@@ -123,7 +124,9 @@ class MyBattleshipBot(BattleshipBotAPI):
                         [0, 0, 0, 0, 0, 0, 0, 0],
                         [0, 0, 0, 0, 0, 0, 0, 0],
                         ]
-
+            for ship in ship_list:
+                #TODO: transform ship name into dimensions
+                add_ship_to_PDF(ship, PDF_grid, opponent_grid) 
             return PDF_grid
         
         if available_cells:
