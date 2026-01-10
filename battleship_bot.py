@@ -22,8 +22,7 @@ from battleship_api import BattleshipBotAPI, run_bot, ABILITY_CODES
 class MyBattleshipBot(BattleshipBotAPI):
     def ability_selection(self) -> list:
         """Choose 2 abilities for the entire game."""
-        # TODO: Replace with your strategy
-        return ["SP", "RF"]  # Example: Sonar Pulse and Rapid Fire
+        return ["SP", "HS"] 
     
     def place_ship_strategy(self, ship_name: str, game_state: dict) -> dict:
         """Place a ship on your board."""
@@ -48,6 +47,48 @@ class MyBattleshipBot(BattleshipBotAPI):
         available_abilities = self._get_available_abilities(game_state)
         opponent_grid = self._get_opponent_grid(game_state)
         available_cells = self._get_available_cells(opponent_grid)
+
+        def count_N(opponent_grid):
+        #Returns the number of untargeted squares in the grid.
+            total = 0
+            for row in opponent_grid:
+                for square in row:
+                    if square == "N":
+                        total += 1
+            return total
+
+        #first move: use SP
+        if count_N(opponent_grid) == 64:
+        #if blank grid, i.e. first move
+            #do SP in the middleish of the board
+            return {
+                "combat": {
+                    "cell": [0, 0],
+                    "ability": {"SP": [3, 3]}
+                }
+            }
+        
+        #second move: use HS
+        if count_N(opponent_grid) == 64 - 9:
+            #if it's the second move, at which point we've fired at 9 cells
+            return {
+                "combat": {
+                    "cell": [0, 0],
+                    "ability": {"HS": [0, 0]}
+                }
+            }
+
+        def generate_PDF(opponent_grid, ship_list):
+            PDF_grid = [[0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                        ]
+            return PDF_grid
         
         if available_cells:
             target = random.choice(available_cells)
