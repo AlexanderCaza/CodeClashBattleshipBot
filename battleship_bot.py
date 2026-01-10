@@ -83,27 +83,30 @@ class MyBattleshipBot(BattleshipBotAPI):
             ship_verti = ship_dimensions[1]
             
             #if we've run out of rows
-            if start_row + ship_verti > 8:
+            if start_row + ship_hori > 8:
                 return False
             #run out of columns
-            if start_square + ship_hori > 8:
+            if start_square + ship_verti > 8:
                 return False
             
             #check horizontal space
-            for i in range(ship_hori):
-                for j in range(ship_verti):
+            for i in range(ship_verti):
+                for j in range(ship_hori):
                     if opponent_grid[start_row + j][start_square + i] != "N":
                         return False
             return True
-        
+
         def add_ship_to_PDF(ship_dimensions, PDF_grid, opponent_grid):
+            verti = ship_dimensions[0]
+            hori = ship_dimensions[1]
             #TODO: change to row and square
-            for x in range(8):
-                for y in range(8):
-                    if does_ship_fit(ship_dimensions, opponent_grid, (x, y)):
-                        for i in range(x):
-                            for j in range(y):
-                                PDF_grid[y][x] = PDF_grid[y][x] + 1
+            for row in range(8):
+                for col in range(8):
+                    if does_ship_fit(ship_dimensions, opponent_grid, (row, col)):
+                        for i in range(ship_dimensions[0]):
+                            for j in range(ship_dimensions[1]):
+                                PDF_grid[row + i][col + j] = PDF_grid[row + i][col + j] + 1
+                        
             return
 
         def generate_PDF(opponent_grid, ship_list):
@@ -118,10 +121,9 @@ class MyBattleshipBot(BattleshipBotAPI):
                         [0, 0, 0, 0, 0, 0, 0, 0],
                         ]
             for ship in ship_list:
-                #TODO: transform ship name into dimensions
                 add_ship_to_PDF(ship, PDF_grid, opponent_grid) 
             return PDF_grid
-        
+
         def get_max_PDF_coords(PDF_grid):
             #TODO: there may be a bug here
             max_coords = [0, 0]
@@ -291,8 +293,8 @@ class MyBattleshipBot(BattleshipBotAPI):
                 }
             }
 
-        #second turn: parse sonar and fire at any hits
-        #INTEGRATED
+        # second turn: parse sonar and fire at any hits
+        # NOT WORKING FOR SOME REASON
         if is_blank and not ("SP" in available_abilities):
             #get sonar data
             SP_json = game_state.get("player_abilities")[0]
@@ -301,11 +303,12 @@ class MyBattleshipBot(BattleshipBotAPI):
                 for json_col in row:
                     #if sonar detects a ship, shoot it
                     if row.get("result") == "Ship":
+                        #assert False, "found a ship!"
                         return shoot_cell_JSON(row.get("cell")[0], row.get("cell")[0])
                     else:
                         opponent_grid[row.get("cell")[0]][row.get("cell")[1]] = "M"
        
-        #Use HS if we haven't already (i.e. if sonar didn't turn up ships)
+        # Use HS if we haven't already (i.e. if sonar didn't turn up ships)
         if "HS" in available_abilities:
             return {
                 "combat": {
@@ -321,13 +324,12 @@ class MyBattleshipBot(BattleshipBotAPI):
         if (attack_shields_result):
             return attack_shields_result
         
-        #TODO: fill out select_next_target
         target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
         if (target_list):
             return attack_next_target(target_list, opponent_grid)
 
         #4. if no target lists
-        PDF_grid = generate_PDF(opponent_grid, unsunk_from_sunk(sunk_ships))
+        PDF_grid = generate_PDF(opponent_grid, unsunk_from_sunk(sunk_ships)) 
         target_coords = get_max_PDF_coords(PDF_grid)
         return {
             "combat": {
