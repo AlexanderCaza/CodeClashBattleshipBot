@@ -61,6 +61,14 @@ class MyBattleshipBot(BattleshipBotAPI):
                     "ability": {"None": {}}
                 }
             }
+        
+        def get_unsunk_ships(board): 
+            for i in range(1, 8):
+                row = board[i]
+                for j in range(1, 8):
+                    cell = row[j]
+
+            
 
         def count_N(opponent_grid):
         #Returns the number of untargeted squares in the grid.
@@ -149,18 +157,24 @@ class MyBattleshipBot(BattleshipBotAPI):
                         max_coords = [row, square]
             return max_coords
         
-        is_unresolved_hit = True #TODO: implement logic for if there is an unresolved hit
-        ship_list = [] #ships that we haven't hit yet
+        sonar_result = get_sonar_result(<info>)
+        attack_shields_result = attack_shields(sonar_result, opponent_grid)
+        if (attack_shields_result):
+            return attack_shields_result
+        target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
+        if (target_list):
+            return select_next_target(opponent_grid, target_list)
 
-        if not is_unresolved_hit: #if we should generate the PDF
-            PDF_grid = generate_PDF(opponent_grid, ship_list)
-            target_coords = get_max_PDF_coords(PDF_grid)
-            return {
+        
+        PDF_grid = generate_PDF(opponent_grid, ship_list)
+        target_coords = get_max_PDF_coords(PDF_grid)
+        return {
             "combat": {
                 "cell": target_coords,
                 "ability": {"None": {}}
             }
         }
+    
         
         if available_cells:
             target = random.choice(available_cells)
