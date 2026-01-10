@@ -62,12 +62,6 @@ class MyBattleshipBot(BattleshipBotAPI):
                     "ability": {"None": {}}
                 }
             }
-        
-        def get_unsunk_ships(board): 
-            for i in range(1, 8):
-                row = board[i]
-                for j in range(1, 8):
-                    cell = row[j]  
 
         def is_blank(opponent_grid):
         #Returns True if the grid is blank, False otherwise.
@@ -79,7 +73,80 @@ class MyBattleshipBot(BattleshipBotAPI):
             return True
         
         is_blank = is_blank(opponent_grid)
+        
+        def does_ship_fit(ship_dimensions, opponent_grid, start_coords) -> bool:
+            #TODO: change to row and square
+            start_row = start_coords[0]
+            start_square = start_coords[1]
 
+            ship_hori = ship_dimensions[0]
+            ship_verti = ship_dimensions[1]
+            
+            #if we've run out of rows
+            if start_row + ship_verti > 8:
+                return False
+            #run out of columns
+            if start_square + ship_hori > 8:
+                return False
+            
+            #check horizontal space
+            for i in range(ship_hori):
+                for j in range(ship_verti):
+                    if opponent_grid[start_row + j][start_square + i] != "N":
+                        return False
+            return True
+        
+        def add_ship_to_PDF(ship_dimensions, PDF_grid, opponent_grid):
+            #TODO: change to row and square
+            for x in range(8):
+                for y in range(8):
+                    if does_ship_fit(ship_dimensions, opponent_grid, (x, y)):
+                        for i in range(x):
+                            for j in range(y):
+                                PDF_grid[y][x] = PDF_grid[y][x] + 1
+            return
+
+        def generate_PDF(opponent_grid, ship_list):
+            #Returns the PDF grid
+            PDF_grid = [[0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                        [0, 0, 0, 0, 0, 0, 0, 0],
+                        ]
+            for ship in ship_list:
+                #TODO: transform ship name into dimensions
+                add_ship_to_PDF(ship, PDF_grid, opponent_grid) 
+            return PDF_grid
+        
+        def get_max_PDF_coords(PDF_grid):
+            #TODO: there may be a bug here
+            # max_coords = [0, 0]
+            # max_val = 0
+            # for row in range(8):
+            #     for square in range(8):
+            #         if PDF_grid[row][square] >= max_val:
+            #             max_val = PDF_grid[row][square]
+            #             max_coords = [row, square]
+            #return max_coords
+            return [0, 0]
+        
+        def attack_shields(opponent_grid):
+            #Returns combat JSON of shield if it exists and we should attack it
+            #Returns False otherwise
+            for row in range(8):
+                for col in range(8):
+                    if opponent_grid[row][col] == "S":
+                        if random.randint(0, 2) == 2:
+                            return shoot_cell_JSON(row, col)
+                        else:
+                            return False
+                        
+            return False
+        
         #first move: use SP
         if is_blank and "SP" in available_abilities:
         #if blank grid, i.e. first move
@@ -113,97 +180,24 @@ class MyBattleshipBot(BattleshipBotAPI):
                 }
             }
         
-        def does_ship_fit(ship_dimensions, opponent_grid, start_coords) -> bool:
-            #TODO: change to row and square
-            start_row = start_coords[0]
-            start_square = start_coords[1]
-
-            ship_hori = ship_dimensions[0]
-            ship_verti = ship_dimensions[1]
-            
-            #if we've run out of rows
-            if start_row + ship_verti[0] > 8:
-                return False
-            #run out of columns
-            if start_square[1] + ship_hori[1] > 8:
-                return False
-            
-            #check horizontal space
-            for i in range(ship_hori):
-                for j in range(ship_verti):
-                    if opponent_grid[start_row + j][start_square + i] != "N":
-                        return False
-            return True
-        
-        def add_ship_to_PDF(ship_dimensions, PDF_grid, opponent_grid):
-            #TODO: change to row and square
-            for x in range(8):
-                for y in range(8):
-                    if does_ship_fit(ship_dimensions, opponent_grid, (x, y)):
-                        for i in range(x):
-                            for j in range(y):
-                                PDF_grid[y][x] = PDF_grid[y][x] + 1
-
-        def generate_PDF(opponent_grid, ship_list):
-            #Returns the PDF grid
-            PDF_grid = [[0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0, 0, 0, 0],
-                        ]
-            for ship in ship_list:
-                #TODO: transform ship name into dimensions
-                add_ship_to_PDF(ship, PDF_grid, opponent_grid) 
-            return PDF_grid
-        
-        def get_max_PDF_coords(PDF_grid):
-            max_coords = []
-            max_val = 0
-            for row in range(8):
-                for square in range(8):
-                    if PDF_grid[row][square] >= max_val:
-                        max_val = PDF_grid[row][square]
-                        max_coords = [row, square]
-            return max_coords
-
-        def parse_sonar
-        
-        def attack_shields(opponent_grid):
-            #Returns coordinates of shield if it exists and we should attack it
-            #Returns False otherwise
-            for row in range(8):
-                for col in range(8):
-                    if opponent_grid[row][col] == "S":
-                        if random.randint(0, 2) == 2:
-                            return shoot_cell_JSON(row, col)
-                        else:
-                            return False
-                        
-            return False
-        
-        sonar_result = get_sonar_result(<info>)
+        #subsequent turns
         attack_shields_result = attack_shields(opponent_grid)
         if (attack_shields_result):
             return attack_shields_result
-        target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
-        if (target_list):
-            return select_next_target(opponent_grid, target_list)
+        # target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
+        # if (target_list):
+        #     return select_next_target(opponent_grid, target_list)
 
         
-        PDF_grid = generate_PDF(opponent_grid, ship_list)
+        PDF_grid = generate_PDF(opponent_grid, [(4, 1), (1, 4), (2, 3), (3, 2)]) #TODO: un-hardcode
         target_coords = get_max_PDF_coords(PDF_grid)
         return {
             "combat": {
-                "cell": target_coords,
+                "cell": [0, 0], #change to target_coords
                 "ability": {"None": {}}
             }
         }
-    
-        
+            
         if available_cells:
             target = random.choice(available_cells)
         else:
