@@ -28,10 +28,10 @@ class MyBattleshipBot(BattleshipBotAPI):
         """Place a ship on your board."""
         # TODO: Replace with your strategy
         ship_positions = thisdict = {
-            "ship_1x2": [8, 7],
-            "ship_1x3": [4, 7], 
-            "ship_1x4": [5, 2], 
-            "ship_2x3": [4, 5]
+            "ship_1x2": [7, 6],
+            "ship_1x3": [3, 6], 
+            "ship_1x4": [4, 1], 
+            "ship_2x3": [3, 4]
         }
         ship_directions = {
             "ship_1x2": "V",
@@ -54,10 +54,11 @@ class MyBattleshipBot(BattleshipBotAPI):
         opponent_grid = self._get_opponent_grid(game_state)
         available_cells = self._get_available_cells(opponent_grid)
 
-        def shoot_cell_JSON(cell_x, cell_y):
+        def shoot_cell_JSON(row, col):
+            #TODO: double-check API coordinate logic
             return {
                 "combat": {
-                    "cell": [cell_x, cell_y],
+                    "cell": [row, col],
                     "ability": {"None": {}}
                 }
             }
@@ -66,21 +67,21 @@ class MyBattleshipBot(BattleshipBotAPI):
             for i in range(1, 8):
                 row = board[i]
                 for j in range(1, 8):
-                    cell = row[j]
+                    cell = row[j]  
 
-            
-
-        def count_N(opponent_grid):
-        #Returns the number of untargeted squares in the grid.
+        def is_blank(opponent_grid):
+        #Returns True if the grid is blank, False otherwise.
             total = 0
             for row in opponent_grid:
                 for square in row:
-                    if square == "N":
-                        total += 1
-            return total
+                    if square != "N":
+                        return False
+            return True
+        
+        is_blank = is_blank(opponent_grid)
 
         #first move: use SP
-        if count_N(opponent_grid) == 64:
+        if is_blank and "SP" in available_abilities:
         #if blank grid, i.e. first move
             #do SP in the middleish of the board
             return {
@@ -90,9 +91,21 @@ class MyBattleshipBot(BattleshipBotAPI):
                 }
             }
         
-        #second move: use HS
-        if count_N(opponent_grid) == 64 - 9:
-            #if it's the second move, at which point we've fired at 9 cells
+        #second turn: parse sonar and fire at any hits
+        if is_blank and not ("SP" in available_abilities):
+            #get sonar data
+            SP_json = game_state.get("player_abilities")[0]
+            info = SP_json.get("info").get("SP") #3-by-3 array
+            for row in info:
+                for json_col in row:
+                    #if sonar detects a ship, shoot it
+                    if row.get("result") == "Ship":
+                        return shoot_cell_JSON(row.get("cell")[0], row.get("cell")[0])
+                    else:
+                        opponent_grid[row.get("cell")[0]][row.get("cell")[1]] = "M"
+       
+        #Use HS if we haven't already (i.e. if sonar didn't turn up ships)
+        if "HS" in available_abilities:
             return {
                 "combat": {
                     "cell": [0, 0],
@@ -156,22 +169,24 @@ class MyBattleshipBot(BattleshipBotAPI):
                         max_val = PDF_grid[row][square]
                         max_coords = [row, square]
             return max_coords
+
+        def parse_sonar
         
-        def attack_shields(sonar_result, opponent_grid):
+        def attack_shields(opponent_grid):
             #Returns coordinates of shield if it exists and we should attack it
             #Returns False otherwise
             for row in range(8):
                 for col in range(8):
                     if opponent_grid[row][col] == "S":
                         if random.randint(0, 2) == 2:
-                            return (row, col)
+                            return shoot_cell_JSON(row, col)
                         else:
                             return False
                         
             return False
         
         sonar_result = get_sonar_result(<info>)
-        attack_shields_result = attack_shields(sonar_result, opponent_grid)
+        attack_shields_result = attack_shields(opponent_grid)
         if (attack_shields_result):
             return attack_shields_result
         target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
