@@ -139,7 +139,7 @@ class MyBattleshipBot(BattleshipBotAPI):
             #Returns False otherwise
             for row in range(8):
                 for col in range(8):
-                    if opponent_grid[row][col] == "S":
+                    if opponent_grid[row][col] == "B":
                         if random.randint(0, 2) == 2:
                             return shoot_cell_JSON(row, col)
                         else:
@@ -169,7 +169,7 @@ class MyBattleshipBot(BattleshipBotAPI):
                 for j in range(0, 7):
                     number_of_hits_in_group = 0
                     cell = row[j]
-                    if (cell == "H" or cell == "S"):
+                    if (cell == "H" or cell == "B"):
                         if ([i, j] in cells_processed): 
                             continue
                         cells_to_check = get_adjacent_cells(i, j)
@@ -188,7 +188,7 @@ class MyBattleshipBot(BattleshipBotAPI):
                                     cells_to_check.append(adj_cell)    
                             elif (cell_content == "M"):
                                 continue
-                            elif (cell_content == "N" or cell == "S"):
+                            elif (cell_content == "N" or cell == "B"):
                                 if (cell_being_processed in cells_processed):
                                     continue
                                 opportunity_targets.append(cell_being_processed)
@@ -281,16 +281,16 @@ class MyBattleshipBot(BattleshipBotAPI):
         attack_shields_result = attack_shields(opponent_grid)
         if (attack_shields_result):
             return attack_shields_result
-        # target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
-        # if (target_list):
-        #     return select_next_target(opponent_grid, target_list)
+        target_list, sunk_ships = get_opportunistic_targets(opponent_grid)
+        if (target_list):
+            return select_next_target(opponent_grid, target_list)
 
         
         PDF_grid = generate_PDF(opponent_grid, [(4, 1), (1, 4), (2, 3), (3, 2)]) #TODO: un-hardcode
         target_coords = get_max_PDF_coords(PDF_grid)
         return {
             "combat": {
-                "cell": [0, 0], #change to target_coords
+                "cell": target_coords,
                 "ability": {"None": {}}
             }
         }
