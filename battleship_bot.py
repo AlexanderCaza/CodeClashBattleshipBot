@@ -157,6 +157,19 @@ class MyBattleshipBot(BattleshipBotAPI):
                         max_coords = [row, square]
             return max_coords
         
+        def attack_shields(sonar_result, opponent_grid):
+            #Returns coordinates of shield if it exists and we should attack it
+            #Returns False otherwise
+            for row in range(8):
+                for col in range(8):
+                    if opponent_grid[row][col] == "S":
+                        if random.randint(0, 2) == 2:
+                            return (row, col)
+                        else:
+                            return False
+                        
+            return False
+        
         sonar_result = get_sonar_result(<info>)
         attack_shields_result = attack_shields(sonar_result, opponent_grid)
         if (attack_shields_result):
