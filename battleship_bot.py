@@ -22,7 +22,7 @@ from battleship_api import BattleshipBotAPI, run_bot, ABILITY_CODES
 class MyBattleshipBot(BattleshipBotAPI):
     def ability_selection(self) -> list:
         """Choose 2 abilities for the entire game."""
-        return ["SP", "RF"] 
+        return ["HS", "RF"] 
     
     def place_ship_strategy(self, ship_name: str, game_state: dict) -> dict:
         """Place a ship on your board."""
