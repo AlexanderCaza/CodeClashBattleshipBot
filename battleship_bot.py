@@ -280,40 +280,23 @@ class MyBattleshipBot(BattleshipBotAPI):
             # Catch all: Attack the first target
             return shoot_cell_JSON(target_list[0][0], target_list[0][1])
 
-        
-        #first move: use SP
-        #INTEGRATED
-        if is_blank and "SP" in available_abilities:
-        #if blank grid, i.e. first move
-            #do SP in the middleish of the board
-            return {
-                "combat": {
-                    "cell": [0, 0],
-                    "ability": {"SP": [3, 3]}
-                }
-            }
-
-        # second turn: parse sonar and fire at any hits
-        # NOT WORKING FOR SOME REASON
-        if is_blank and not ("SP" in available_abilities):
-            #get sonar data
-            SP_json = game_state.get("player_abilities")[0]
-            info = SP_json.get("info").get("SP") #3-by-3 array
-            for row in info:
-                for json_col in row:
-                    #if sonar detects a ship, shoot it
-                    if row.get("result") == "Ship":
-                        #assert False, "found a ship!"
-                        return shoot_cell_JSON(row.get("cell")[0], row.get("cell")[0])
-                    else:
-                        opponent_grid[row.get("cell")[0]][row.get("cell")[1]] = "M"
-       
-        # Use HS if we haven't already (i.e. if sonar didn't turn up ships)
-        if "HS" in available_abilities:
+        if is_blank:
             return {
                 "combat": {
                     "cell": [0, 0],
                     "ability": {"HS": [0, 0]}
+                }
+            }
+       
+        # Use RF if we haven't already (i.e. if sonar didn't turn up ships)
+        if "RF" in available_abilities:
+            PDF_grid = generate_PDF(opponent_grid, unsunk_from_sunk([])) 
+            target_coords = get_max_PDF_coords(PDF_grid)
+            other_target_coords = get_other_max_PDF_coords(PDF_grid)
+            return {
+                "combat": {
+                    "cell": [0, 0],
+                    "ability": {"RF": [target_coords, other_target_coords]}
                 }
             }
         
