@@ -135,6 +135,17 @@ class MyBattleshipBot(BattleshipBotAPI):
                         max_coords = [row, square]
             return max_coords
         
+        def get_other_max_PDF_coords(PDF_grid):
+            #TODO: there may be a bug here
+            max_coords = [0, 0]
+            max_val = 0
+            for row in range(8):
+                for square in range(8):
+                    if PDF_grid[row][square] > max_val:
+                        max_val = PDF_grid[row][square]
+                        max_coords = [row, square]
+            return max_coords
+        
         def unsunk_from_sunk(sunk_ships):
             unsunk_ships = [(4, 1), (1, 4), (2, 3), (3, 2), (1, 3), (3, 1), (1, 2), (2, 1)]
             for ship in sunk_ships:
